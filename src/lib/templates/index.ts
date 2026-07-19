@@ -170,15 +170,15 @@ export const createDefaultCV = (name: string, templateId: string): CV => {
     createdAt: now,
     updatedAt: now,
     personalInfo: {
-      name: "Tomy Kartas",
+      name: "Pratama Varian",
       title: "Software Engineer",
       summary: "Detail-oriented software engineer with 4+ years of experience designing and implementing highly performant visual editors and responsive web platforms. Passionate about tactile interfaces, clean typography, and robust API design.",
       contacts: [
-        { id: crypto.randomUUID(), label: "Email", value: "tomy.kartas@email.com", icon: "email" },
+        { id: crypto.randomUUID(), label: "Email", value: "pratama.varian@email.com", icon: "email" },
         { id: crypto.randomUUID(), label: "Phone", value: "+1 (555) 123-4567", icon: "phone" },
-        { id: crypto.randomUUID(), label: "LinkedIn", value: "linkedin.com/in/tomykartas", icon: "linkedin" },
-        { id: crypto.randomUUID(), label: "GitHub", value: "github.com/tomykartas", icon: "github" },
-        { id: crypto.randomUUID(), label: "Portfolio", value: "tomykartas.dev", icon: "globe" }
+        { id: crypto.randomUUID(), label: "LinkedIn", value: "linkedin.com/in/pratama-varian", icon: "linkedin" },
+        { id: crypto.randomUUID(), label: "GitHub", value: "github.com/pratamavarian", icon: "github" },
+        { id: crypto.randomUUID(), label: "Portfolio", value: "pratamavarian.dev", icon: "globe" }
       ]
     },
     sections: defaultSections,
