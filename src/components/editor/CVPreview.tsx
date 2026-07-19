@@ -41,10 +41,10 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
     reader.readAsDataURL(file);
   };
 
-  const getContactHref = (icon: string | undefined, value: string) => {
-    const cleanVal = value.trim();
-    if (icon === "email") return `mailto:${cleanVal}`;
-    if (icon === "phone") return `tel:${cleanVal.replace(/[^+\d]/g, "")}`;
+  const getContactHref = (icon: string | undefined, value: string, url?: string) => {
+    const cleanVal = (url || value).trim();
+    if (icon === "email" && !cleanVal.startsWith("mailto:")) return `mailto:${cleanVal}`;
+    if (icon === "phone" && !cleanVal.startsWith("tel:") && !cleanVal.startsWith("https://wa.me/")) return `tel:${cleanVal.replace(/[^+\d]/g, "")}`;
     if (cleanVal.startsWith("http://") || cleanVal.startsWith("https://")) {
       return cleanVal;
     }
@@ -373,12 +373,37 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                         tagName="h3"
                         style={{ fontWeight: 600, fontSize: "0.95rem" }}
                       />
-                      <EditableText
-                        value={entry.company}
-                        onChange={(v) => updateEntryField(section.id, entry.id, "company", v)}
-                        tagName="span"
-                        style={{ fontSize: "0.9rem", color: "var(--muted-text)", fontStyle: "italic" }}
-                      />
+                      {entry.companyUrl ? (
+                        <a 
+                          href={getContactHref(undefined, entry.companyUrl)} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          style={{ 
+                            color: settings.themeColor, 
+                            textDecoration: "none", 
+                            borderBottom: `1px dotted ${settings.themeColor}` 
+                          }}
+                          onClick={(e) => {
+                            if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          <EditableText
+                            value={entry.company}
+                            onChange={(v) => updateEntryField(section.id, entry.id, "company", v)}
+                            tagName="span"
+                            style={{ fontSize: "0.9rem", color: settings.themeColor, fontStyle: "italic" }}
+                          />
+                        </a>
+                      ) : (
+                        <EditableText
+                          value={entry.company}
+                          onChange={(v) => updateEntryField(section.id, entry.id, "company", v)}
+                          tagName="span"
+                          style={{ fontSize: "0.9rem", color: "var(--muted-text)", fontStyle: "italic" }}
+                        />
+                      )}
                       {entry.location && (
                         <span style={{ fontSize: "0.85rem", color: "var(--muted-text)" }}>
                           {" — "}
@@ -859,7 +884,7 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
             {cv.personalInfo.contacts
               .filter((contact) => contact.value.trim() !== "")
               .map((contact) => {
-                const href = getContactHref(contact.icon, contact.value);
+                const href = getContactHref(contact.icon, contact.value, contact.url);
                 return (
                   <span key={contact.id} style={styles.contactItem}>
                     {renderContactIcon(contact.icon)}

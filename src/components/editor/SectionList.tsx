@@ -161,6 +161,7 @@ export default function SectionList({ cv, onChange, onAddSection }: SectionListP
       id: crypto.randomUUID(),
       label: labelMap[newContactType] || "Website",
       value: newContactValue.trim(),
+      url: newContactValue.trim(),
       icon: newContactType,
     };
 
@@ -281,26 +282,41 @@ export default function SectionList({ cv, onChange, onAddSection }: SectionListP
             <label style={styles.fieldLabel}>Contact & Social Links</label>
             <div style={styles.contactsList}>
               {personalInfo.contacts.map((contact) => (
-                <div key={contact.id} style={styles.contactRowItem}>
-                  <span style={styles.contactBadge}>{contact.label}</span>
+                <div key={contact.id} style={{ ...styles.contactRowItem, flexDirection: "column", gap: "4px", alignItems: "stretch" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={styles.contactBadge}>{contact.label}</span>
+                    <input
+                      type="text"
+                      placeholder="Display text"
+                      value={contact.value}
+                      onChange={(e) => {
+                        const updatedContacts = personalInfo.contacts.map((c) => 
+                          c.id === contact.id ? { ...c, value: e.target.value } : c
+                        );
+                        updatePersonalInfo("contacts", updatedContacts);
+                      }}
+                      style={{ ...styles.contactInputMini, fontWeight: "bold" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeContactLink(contact.id)}
+                      style={styles.deleteContactBtn}
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                   <input
                     type="text"
-                    value={contact.value}
+                    placeholder="URL (optional)"
+                    value={contact.url || ""}
                     onChange={(e) => {
                       const updatedContacts = personalInfo.contacts.map((c) => 
-                        c.id === contact.id ? { ...c, value: e.target.value } : c
+                        c.id === contact.id ? { ...c, url: e.target.value } : c
                       );
                       updatePersonalInfo("contacts", updatedContacts);
                     }}
-                    style={styles.contactInputMini}
+                    style={{ ...styles.contactInputMini, fontSize: "0.75rem", color: "var(--muted-text)", paddingLeft: "6px" }}
                   />
-                  <button
-                    type="button"
-                    onClick={() => removeContactLink(contact.id)}
-                    style={styles.deleteContactBtn}
-                  >
-                    <Trash2 size={12} />
-                  </button>
                 </div>
               ))}
             </div>
@@ -382,6 +398,18 @@ export default function SectionList({ cv, onChange, onAddSection }: SectionListP
                     onChange={(e) => {
                       const updated = currentSection.entries.map((ent: any) => 
                         ent.id === entry.id ? { ...ent, company: e.target.value } : ent
+                      );
+                      updateSectionEntries(currentSection.id, updated);
+                    }}
+                    style={styles.formInputMini}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Company Website/URL (optional)"
+                    value={entry.companyUrl || ""}
+                    onChange={(e) => {
+                      const updated = currentSection.entries.map((ent: any) => 
+                        ent.id === entry.id ? { ...ent, companyUrl: e.target.value } : ent
                       );
                       updateSectionEntries(currentSection.id, updated);
                     }}

@@ -2,6 +2,7 @@ export interface ContactLink {
   id: string;
   label: string;
   value: string;
+  url?: string;
   icon?: string; // e.g. "email", "phone", "linkedin", "github", "globe"
 }
 
@@ -18,6 +19,7 @@ export interface WorkEntry {
   company: string;
   role: string;
   location?: string;
+  companyUrl?: string;
   startDate: string;
   endDate: string; // e.g. "Present" or Date
   current: boolean;
