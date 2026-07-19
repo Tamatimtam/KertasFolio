@@ -201,6 +201,7 @@ export interface CVSettings {
   fontFamily: string; // e.g. "Inter", "Outfit", "Playfair Display", "Roboto"
   photoShape: "circle" | "square" | "rounded";
   dividerStyle: "line" | "dots" | "none";
+  showPhoto: boolean;
 }
 
 export interface CV {

@@ -267,11 +267,6 @@ export default function Editor({ params }: { params: Promise<{ id: string }> }) 
         </div>
 
         <div style={styles.toolbarRight}>
-          {/* Quick Local API instructions helper */}
-          <span style={styles.apiIndicator} title="Local API is running on /api/cvs">
-            <Sparkles size={14} style={{ marginRight: 4, color: "var(--accent)" }} /> AI Ready
-          </span>
-          
           <button 
             type="button" 
             style={styles.exportBtn}
@@ -293,8 +288,8 @@ export default function Editor({ params }: { params: Promise<{ id: string }> }) 
       <div style={styles.workspace}>
         {/* Left: Reorder lists */}
         <SectionList
-          sections={cv.sections}
-          onChange={handleSectionsChange}
+          cv={cv}
+          onChange={updateCV}
           onAddSection={handleAddSection}
         />
 

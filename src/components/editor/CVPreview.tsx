@@ -10,6 +10,46 @@ interface CVPreviewProps {
 
 export default function CVPreview({ cv, onChange }: CVPreviewProps) {
   const { settings } = cv;
+  const photoInputRef = React.useRef<HTMLInputElement>(null);
+
+  const triggerPhotoUpload = () => {
+    photoInputRef.current?.click();
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Invalid file type. Only JPG, PNG, and WebP images are allowed.");
+      return;
+    }
+
+    const maxSize = 1.5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert("File is too large. Image size must be under 1.5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        updatePersonalField("photoUrl", reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const getContactHref = (icon: string | undefined, value: string) => {
+    const cleanVal = value.trim();
+    if (icon === "email") return `mailto:${cleanVal}`;
+    if (icon === "phone") return `tel:${cleanVal.replace(/[^+\d]/g, "")}`;
+    if (cleanVal.startsWith("http://") || cleanVal.startsWith("https://")) {
+      return cleanVal;
+    }
+    return `https://${cleanVal}`;
+  };
 
   // Resolve fonts based on selection
   const getFonts = () => {
@@ -65,7 +105,7 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
   };
 
   // Handlers for Personal Info
-  const updatePersonalField = (field: "name" | "title" | "summary", val: string) => {
+  const updatePersonalField = (field: "name" | "title" | "summary" | "photoUrl", val: string | undefined) => {
     onChange({
       ...cv,
       personalInfo: {
@@ -814,33 +854,88 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
             }}
           />
 
-          {/* Contact Links */}
+           {/* Contact Links */}
           <div style={styles.contactsRow}>
-            {cv.personalInfo.contacts.map((contact) => (
-              <span key={contact.id} style={styles.contactItem}>
-                {renderContactIcon(contact.icon)}
-                <EditableText
-                  value={contact.value}
-                  onChange={(val) => updateContactValue(contact.id, val)}
-                  tagName="span"
-                />
-              </span>
-            ))}
+            {cv.personalInfo.contacts
+              .filter((contact) => contact.value.trim() !== "")
+              .map((contact) => {
+                const href = getContactHref(contact.icon, contact.value);
+                return (
+                  <span key={contact.id} style={styles.contactItem}>
+                    {renderContactIcon(contact.icon)}
+                    <a 
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        // Prevent navigation if editing
+                        if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
+                          e.preventDefault();
+                        }
+                      }}
+                      style={styles.contactLink}
+                    >
+                      <EditableText
+                        value={contact.value}
+                        onChange={(val) => updateContactValue(contact.id, val)}
+                        tagName="span"
+                      />
+                    </a>
+                  </span>
+                );
+              })}
           </div>
         </div>
 
-        {/* Optional Profile Photo Placeholder */}
-        <div style={styles.photoContainer}>
-          <div 
-            style={{ 
-              ...styles.photoPlaceholder, 
-              borderRadius: getPhotoRadius(),
-              border: `2px dashed ${settings.themeColor || "#ccc"}`
-            }}
-          >
-            Photo
+        {/* Optional Profile Photo */}
+        {settings.showPhoto && (
+          <div style={styles.photoContainer}>
+            <input
+              type="file"
+              ref={photoInputRef}
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handlePhotoUpload}
+              style={{ display: "none" }}
+            />
+            {cv.personalInfo.photoUrl ? (
+              <div 
+                style={{ 
+                  position: "relative",
+                  width: "80px",
+                  height: "80px",
+                  cursor: "pointer",
+                }}
+                onClick={triggerPhotoUpload}
+                title="Click to change photo"
+              >
+                <img 
+                  src={cv.personalInfo.photoUrl} 
+                  alt="Profile" 
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    objectFit: "cover",
+                    borderRadius: getPhotoRadius(),
+                    border: `1px solid var(--border-subtle)`
+                  }}
+                />
+              </div>
+            ) : (
+              <div 
+                onClick={triggerPhotoUpload}
+                style={{ 
+                  ...styles.photoPlaceholder, 
+                  borderRadius: getPhotoRadius(),
+                  border: `2px dashed ${settings.themeColor || "#ccc"}`,
+                  cursor: "pointer",
+                }}
+                title="Click to upload photo"
+              >
+                + Photo
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Optional Executive Summary */}
@@ -905,6 +1000,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: "center",
     fontSize: "0.78rem",
     color: "var(--muted-text)",
+  },
+  contactLink: {
+    color: "inherit",
+    textDecoration: "none",
+    borderBottom: "1px dotted oklch(80% 0.01 250)",
+    display: "inline-flex",
+    alignItems: "center",
+    transition: "border-color var(--transition-fast)",
   },
   photoContainer: {
     flexShrink: 0,

@@ -122,13 +122,44 @@ export default function Dashboard() {
                     setIsModalOpen(true);
                   }}
                 >
-                  <div style={{ ...styles.templatePreviewMini, borderTop: `4px solid ${tmpl.themeColor}` }}>
-                    <div style={styles.skeletonLine}></div>
-                    <div style={styles.skeletonLineShort}></div>
-                    <div style={styles.skeletonGrid}>
-                      <div style={styles.skeletonCol}></div>
-                      <div style={styles.skeletonCol}></div>
-                    </div>
+                  <div style={{ ...styles.templatePreviewMini, borderTop: `4px solid ${tmpl.themeColor}`, overflow: "hidden" }}>
+                    {tmpl.id === "classic" && (
+                      <div style={{ display: "flex", flexDirection: "column", width: "100%", alignItems: "center" }}>
+                        <div style={{ ...styles.skeletonLine, width: "50%", height: "8px", marginBottom: "4px" }}></div>
+                        <div style={{ ...styles.skeletonLineShort, width: "30%", height: "5px", marginBottom: "12px" }}></div>
+                        <div style={{ ...styles.skeletonLine, width: "90%", height: "4px", marginBottom: "4px" }}></div>
+                        <div style={{ ...styles.skeletonLine, width: "85%", height: "4px", marginBottom: "4px" }}></div>
+                        <div style={{ ...styles.skeletonLine, width: "70%", height: "4px" }}></div>
+                      </div>
+                    )}
+                    {tmpl.id === "modern" && (
+                      <div style={{ display: "flex", width: "100%", height: "100%", gap: "8px" }}>
+                        {/* Left Sidebar */}
+                        <div style={{ width: "35%", display: "flex", flexDirection: "column", gap: "6px", borderRight: "1px solid var(--border-subtle)", paddingRight: "6px", height: "100%" }}>
+                          <div style={{ ...styles.skeletonLineShort, width: "80%", height: "6px", marginBottom: "2px" }}></div>
+                          <div style={{ ...styles.skeletonLine, width: "90%", height: "3px" }}></div>
+                          <div style={{ ...styles.skeletonLine, width: "70%", height: "3px" }}></div>
+                          <div style={{ ...styles.skeletonLineShort, width: "80%", height: "6px", marginTop: "4px", marginBottom: "2px" }}></div>
+                          <div style={{ ...styles.skeletonLine, width: "50%", height: "3px" }}></div>
+                        </div>
+                        {/* Right Main */}
+                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", height: "100%" }}>
+                          <div style={{ ...styles.skeletonLine, width: "70%", height: "8px" }}></div>
+                          <div style={{ ...styles.skeletonLineShort, width: "40%", height: "5px", marginBottom: "6px" }}></div>
+                          <div style={{ ...styles.skeletonLine, width: "100%", height: "3px" }}></div>
+                          <div style={{ ...styles.skeletonLine, width: "95%", height: "3px" }}></div>
+                        </div>
+                      </div>
+                    )}
+                    {tmpl.id === "minimal" && (
+                      <div style={{ display: "flex", flexDirection: "column", width: "100%", justifyContent: "center" }}>
+                        <div style={{ ...styles.skeletonLine, width: "40%", height: "10px", marginBottom: "4px" }}></div>
+                        <div style={{ ...styles.skeletonLineShort, width: "20%", height: "5px", marginBottom: "16px" }}></div>
+                        <div style={{ ...styles.skeletonLine, width: "100%", height: "3px", marginBottom: "4px" }}></div>
+                        <div style={{ ...styles.skeletonLine, width: "90%", height: "3px", marginBottom: "8px" }}></div>
+                        <div style={{ ...styles.skeletonLine, width: "100%", height: "3px" }}></div>
+                      </div>
+                    )}
                   </div>
                   <h3 style={styles.tmplName}>{tmpl.name}</h3>
                   <p style={styles.tmplDesc}>{tmpl.description}</p>

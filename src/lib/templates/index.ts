@@ -188,6 +188,7 @@ export const createDefaultCV = (name: string, templateId: string): CV => {
       fontFamily: template.fontFamily,
       photoShape: template.photoShape,
       dividerStyle: template.dividerStyle,
+      showPhoto: true,
     }
   };
 };
