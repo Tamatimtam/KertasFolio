@@ -6,9 +6,9 @@
   
   --primary: oklch(18% 0.006 250);
   --primary-hover: oklch(30% 0.008 250);
-  --accent: oklch(55% 0.2 250);
-  --accent-hover: oklch(48% 0.18 250);
-  --accent-light: oklch(95% 0.02 250);
+  --accent: oklch(73.53% 0.1203 123.72);
+  --accent-hover: oklch(65.44% 0.1121 124.16);
+  --accent-light: oklch(97.26% 0.0176 120.68);
   
   --muted-text: oklch(50% 0.01 250);
   --border-subtle: oklch(92% 0.005 250);
