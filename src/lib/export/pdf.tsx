@@ -1,12 +1,32 @@
 import { saveAs } from "file-saver";
 import { type CV } from "@/types/cv";
 
+const getTechIconUrl = (tech: string): string => {
+  return `/api/icons/${encodeURIComponent(tech.trim())}?ext=.png`;
+};
+
+const getContactIconUrl = (icon: string | undefined): string | null => {
+  if (!icon) return null;
+  const map: Record<string, string> = {
+    email: "outlook.com",
+    phone: "whatsapp.com",
+    linkedin: "linkedin.com",
+    github: "github.com",
+    location: "openstreetmap.org"
+  };
+  const domain = map[icon.toLowerCase().trim()] || "w3.org";
+  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=32&ext=.png`;
+};
+
 export async function exportPDF(cv: CV) {
   // Dynamically load the react-pdf renderer on client side to avoid build/SSR issues
-  const { pdf, Document, Page, View, Text, Link, StyleSheet, Font } = await import("@react-pdf/renderer");
+  const { pdf, Document, Page, View, Text, Link, Image, StyleSheet } = await import("@react-pdf/renderer");
 
   const getContactHref = (icon: string | undefined, value: string, url?: string) => {
     const cleanVal = (url || value).trim();
+    if (cleanVal.startsWith("mailto:") || cleanVal.startsWith("tel:")) {
+      return cleanVal;
+    }
     if (icon === "email" && !cleanVal.startsWith("mailto:")) return `mailto:${cleanVal}`;
     if (icon === "phone" && !cleanVal.startsWith("tel:") && !cleanVal.startsWith("https://wa.me/")) return `tel:${cleanVal.replace(/[^+\d]/g, "")}`;
     if (cleanVal.startsWith("http://") || cleanVal.startsWith("https://")) {
@@ -18,6 +38,7 @@ export async function exportPDF(cv: CV) {
   // Define styles dynamically based on CV settings
   const isSerif = cv.settings.fontFamily === "Playfair Display";
   const primaryColor = cv.settings.themeColor || "#111111";
+  
   const defaultFont = isSerif ? "Times-Roman" : "Helvetica";
   const boldFont = isSerif ? "Times-Bold" : "Helvetica-Bold";
   const italicFont = isSerif ? "Times-Italic" : "Helvetica-Oblique";
@@ -28,7 +49,7 @@ export async function exportPDF(cv: CV) {
       fontSize: 10,
       color: "#1f2937",
       fontFamily: defaultFont,
-      lineHeight: 1.4,
+      lineHeight: 1.3,
     },
     header: {
       marginBottom: 16,
@@ -38,11 +59,14 @@ export async function exportPDF(cv: CV) {
       fontWeight: "bold",
       fontFamily: boldFont,
       color: primaryColor,
+      lineHeight: 1.1,
+      marginBottom: 4,
     },
     title: {
       fontSize: 12,
       color: "#4b5563",
       marginTop: 2,
+      lineHeight: 1.2,
     },
     contactsRow: {
       display: "flex",
@@ -61,6 +85,10 @@ export async function exportPDF(cv: CV) {
     inlineLink: {
       textDecoration: "underline",
       color: primaryColor,
+    },
+    clickableLink: {
+      color: "#1d4ed8",
+      textDecoration: "underline",
     },
     summarySection: {
       marginBottom: 16,
@@ -181,13 +209,19 @@ export async function exportPDF(cv: CV) {
           <View style={styles.contactsRow}>
             {cv.personalInfo.contacts
               .filter((c) => c.value.trim() !== "")
-              .map((contact) => (
-                <Link key={contact.id} src={getContactHref(contact.icon, contact.value, contact.url)} style={styles.contactLink}>
-                  <Text style={styles.contactText}>
-                    {contact.label}: {contact.value}
-                  </Text>
-                </Link>
-              ))}
+              .map((contact) => {
+                const iconUrl = getContactIconUrl(contact.icon);
+                return (
+                  <Link key={contact.id} src={getContactHref(contact.icon, contact.value, contact.url)} style={styles.contactLink}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                      {iconUrl && <Image src={iconUrl} style={{ width: 10, height: 10, borderRadius: 1 }} />}
+                      <Text style={{ ...styles.contactText, ...styles.clickableLink, marginLeft: 2 }}>
+                        {contact.value}
+                      </Text>
+                    </View>
+                  </Link>
+                );
+              })}
           </View>
         </View>
 
@@ -209,14 +243,14 @@ export async function exportPDF(cv: CV) {
               {section.type === "work" && (
                 <View>
                   {section.entries.map((entry) => (
-                    <View key={entry.id} style={styles.entryRow}>
+                    <View key={entry.id} style={styles.entryRow} wrap={false}>
                       <View style={styles.entryHeader}>
                         <View>
                           <Text style={styles.entryTitle}>{entry.role}</Text>
                           <Text style={styles.entrySub}>
                             {entry.companyUrl ? (
                               <Link src={getContactHref(undefined, entry.companyUrl)}>
-                                <Text style={{ color: primaryColor, textDecoration: "underline" }}>{entry.company}</Text>
+                                <Text style={styles.clickableLink}>{entry.company}</Text>
                               </Link>
                             ) : (
                               entry.company
@@ -244,13 +278,13 @@ export async function exportPDF(cv: CV) {
               {section.type === "education" && (
                 <View>
                   {section.entries.map((entry) => (
-                    <View key={entry.id} style={styles.entryRow}>
+                    <View key={entry.id} style={styles.entryRow} wrap={false}>
                       <View style={styles.entryHeader}>
                         <View>
                           <Text style={styles.entryTitle}>
                             {entry.url ? (
                               <Link src={getContactHref(undefined, entry.url)}>
-                                <Text style={{ color: primaryColor, textDecoration: "underline" }}>{entry.degree}</Text>
+                                <Text style={styles.clickableLink}>{entry.degree}</Text>
                               </Link>
                             ) : (
                               entry.degree
@@ -272,30 +306,35 @@ export async function exportPDF(cv: CV) {
 
               {section.type === "skills" && (
                 <View style={styles.skillsContainer}>
-                  {section.entries.map((entry) => (
-                    entry.url ? (
+                  {section.entries.map((entry) => {
+                    const iconUrl = getTechIconUrl(entry.name);
+                    const badgeContent = (
+                      <View style={{ ...styles.skillBadge, flexDirection: "row", alignItems: "center", gap: 4 }}>
+                        {iconUrl && <Image src={iconUrl} style={{ width: 12, height: 12, borderRadius: 2 }} />}
+                        <Text style={entry.url ? { ...styles.clickableLink, fontSize: 8 } : { marginLeft: 2 }}>{entry.name}</Text>
+                      </View>
+                    );
+                    return entry.url ? (
                       <Link key={entry.id} src={getContactHref(undefined, entry.url)} style={{ textDecoration: "none" }}>
-                        <Text style={styles.skillBadge}>
-                          {entry.name}
-                        </Text>
+                        {badgeContent}
                       </Link>
                     ) : (
-                      <Text key={entry.id} style={styles.skillBadge}>
-                        {entry.name}
-                      </Text>
-                    )
-                  ))}
+                      <View key={entry.id}>
+                        {badgeContent}
+                      </View>
+                    );
+                  })}
                 </View>
               )}
 
               {section.type === "projects" && (
                 <View style={styles.projectsGrid}>
                   {section.entries.map((entry) => (
-                    <View key={entry.id} style={styles.projectRow}>
+                    <View key={entry.id} style={styles.projectRow} wrap={false}>
                       <Text style={styles.projectTitle}>
                         {entry.liveUrl ? (
                           <Link src={getContactHref(undefined, entry.liveUrl)}>
-                            <Text style={{ color: primaryColor, textDecoration: "underline" }}>{entry.title}</Text>
+                            <Text style={styles.clickableLink}>{entry.title}</Text>
                           </Link>
                         ) : (
                           entry.title
@@ -303,11 +342,15 @@ export async function exportPDF(cv: CV) {
                       </Text>
                       <Text style={styles.projectDesc}>{entry.description}</Text>
                       <View style={styles.projectTags}>
-                        {entry.techStack.map((tech, idx) => (
-                          <Text key={idx} style={styles.projectTag}>
-                            {tech}
-                          </Text>
-                        ))}
+                        {entry.techStack.map((tech, idx) => {
+                          const iconUrl = getTechIconUrl(tech);
+                          return (
+                            <View key={idx} style={{ ...styles.projectTag, flexDirection: "row", alignItems: "center", gap: 3 }}>
+                              {iconUrl && <Image src={iconUrl} style={{ width: 10, height: 10, borderRadius: 1 }} />}
+                              <Text style={{ marginLeft: 2 }}>{tech}</Text>
+                            </View>
+                          );
+                        })}
                       </View>
                     </View>
                   ))}
@@ -320,11 +363,11 @@ export async function exportPDF(cv: CV) {
                   {(section.entries as any[]).map((entry) => {
                     const targetUrl = entry.url || entry.credentialUrl;
                     return (
-                      <View key={entry.id} style={{ marginBottom: 4 }}>
+                      <View key={entry.id} style={{ marginBottom: 6 }} wrap={false}>
                         <Text style={{ fontWeight: "bold", fontFamily: boldFont }}>
                           {targetUrl ? (
                             <Link src={getContactHref(undefined, targetUrl)}>
-                              <Text style={{ color: primaryColor, textDecoration: "underline" }}>{entry.name || entry.title || entry.role}</Text>
+                              <Text style={styles.clickableLink}>{(entry.name || entry.title || entry.role)}</Text>
                             </Link>
                           ) : (
                             entry.name || entry.title || entry.role

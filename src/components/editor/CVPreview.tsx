@@ -3,6 +3,10 @@ import { Plus, Trash2, Mail, Phone, Globe, ExternalLink } from "lucide-react";
 import { type CV, type CVSection, type ContactLink } from "@/types/cv";
 import EditableText from "./EditableText";
 
+const getTechIconUrl = (tech: string): string => {
+  return `/api/icons/${encodeURIComponent(tech.trim())}`;
+};
+
 interface CVPreviewProps {
   cv: CV;
   onChange: (cv: CV) => void;
@@ -43,6 +47,9 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
 
   const getContactHref = (icon: string | undefined, value: string, url?: string) => {
     const cleanVal = (url || value).trim();
+    if (cleanVal.startsWith("mailto:") || cleanVal.startsWith("tel:")) {
+      return cleanVal;
+    }
     if (icon === "email" && !cleanVal.startsWith("mailto:")) return `mailto:${cleanVal}`;
     if (icon === "phone" && !cleanVal.startsWith("tel:") && !cleanVal.startsWith("https://wa.me/")) return `tel:${cleanVal.replace(/[^+\d]/g, "")}`;
     if (cleanVal.startsWith("http://") || cleanVal.startsWith("https://")) {
@@ -381,7 +388,9 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                           style={{ 
                             color: settings.themeColor, 
                             textDecoration: "none", 
-                            borderBottom: `1px dotted ${settings.themeColor}` 
+                            borderBottom: `1px dotted ${settings.themeColor}`,
+                            display: "inline-flex",
+                            alignItems: "center"
                           }}
                           onClick={(e) => {
                             if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
@@ -395,6 +404,7 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                             tagName="span"
                             style={{ fontSize: "0.9rem", color: settings.themeColor, fontStyle: "italic" }}
                           />
+                          <span style={{ fontSize: "0.75rem", marginLeft: 2 }}>↗</span>
                         </a>
                       ) : (
                         <EditableText
@@ -502,7 +512,9 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                           style={{
                             color: settings.themeColor,
                             textDecoration: "none",
-                            borderBottom: `1px dotted ${settings.themeColor}`
+                            borderBottom: `1px dotted ${settings.themeColor}`,
+                            display: "inline-flex",
+                            alignItems: "center"
                           }}
                           onClick={(e) => {
                             if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
@@ -516,6 +528,7 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                             tagName="h3"
                             style={{ fontWeight: 600, fontSize: "0.95rem", color: settings.themeColor }}
                           />
+                          <span style={{ fontSize: "0.75rem", marginLeft: 2 }}>↗</span>
                         </a>
                       ) : (
                         <EditableText
@@ -574,24 +587,37 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
 
           {section.type === "skills" && (
             <div style={styles.skillsTagGrid}>
-              {section.entries.map((entry) => (
-                <span key={entry.id} className="skill-tag" style={styles.skillTag}>
-                  <EditableText
-                    value={entry.name}
-                    onChange={(v) => updateEntryField(section.id, entry.id, "name", v)}
-                    tagName="span"
-                    style={{ fontSize: "0.85rem" }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeEntry(section.id, entry.id)}
-                    className="delete-tag-btn"
-                    style={styles.deleteTagBtn}
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
+              {section.entries.map((entry) => {
+                const iconUrl = getTechIconUrl(entry.name);
+                return (
+                  <span key={entry.id} className="skill-tag" style={styles.skillTag}>
+                    {iconUrl && (
+                      <img
+                        src={iconUrl}
+                        alt=""
+                        style={{ width: "12px", height: "12px", borderRadius: "2px", objectFit: "contain", display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    )}
+                    <EditableText
+                      value={entry.name}
+                      onChange={(v) => updateEntryField(section.id, entry.id, "name", v)}
+                      tagName="span"
+                      style={{ fontSize: "0.85rem", display: "inline-block", lineHeight: "1.2", verticalAlign: "middle" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeEntry(section.id, entry.id)}
+                      className="delete-tag-btn"
+                      style={styles.deleteTagBtn}
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
             </div>
           )}
 
@@ -608,7 +634,7 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                         style={{ fontWeight: 600, fontSize: "0.95rem" }}
                       />
                       {entry.liveUrl && (
-                        <a href={`https://${entry.liveUrl}`} target="_blank" rel="noopener noreferrer" style={{ color: settings.themeColor }}>
+                        <a href={getContactHref(undefined, entry.liveUrl)} target="_blank" rel="noopener noreferrer" style={{ color: settings.themeColor, display: "inline-flex", alignItems: "center" }}>
                           <ExternalLink size={12} />
                         </a>
                       )}
@@ -634,29 +660,43 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
 
                   {/* Tech stack items */}
                   <div style={styles.techStackRow}>
-                    {entry.techStack.map((tech, idx) => (
-                      <span key={idx} style={styles.techStackPill}>
-                        <EditableText
-                          value={tech}
-                          onChange={(v) => {
-                            const newStack = [...entry.techStack];
-                            newStack[idx] = v;
-                            updateEntryField(section.id, entry.id, "techStack", newStack);
-                          }}
-                          tagName="span"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newStack = entry.techStack.filter((_, i) => i !== idx);
-                            updateEntryField(section.id, entry.id, "techStack", newStack);
-                          }}
-                          style={styles.deleteBulletBtn}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
+                    {entry.techStack.map((tech, idx) => {
+                      const iconUrl = getTechIconUrl(tech);
+                      return (
+                        <span key={idx} style={styles.techStackPill}>
+                          {iconUrl && (
+                            <img
+                              src={iconUrl}
+                              alt=""
+                              style={{ width: "10px", height: "10px", borderRadius: "2px", objectFit: "contain", display: "inline-block", verticalAlign: "middle", marginRight: "4px" }}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          )}
+                          <EditableText
+                            value={tech}
+                            onChange={(v) => {
+                              const newStack = [...entry.techStack];
+                              newStack[idx] = v;
+                              updateEntryField(section.id, entry.id, "techStack", newStack);
+                            }}
+                            tagName="span"
+                            style={{ display: "inline-block", lineHeight: "1.2", verticalAlign: "middle" }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newStack = entry.techStack.filter((_, i) => i !== idx);
+                              updateEntryField(section.id, entry.id, "techStack", newStack);
+                            }}
+                            style={styles.deleteBulletBtn}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      );
+                    })}
                     <button
                       type="button"
                       onClick={() => {
@@ -689,7 +729,9 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                               style={{
                                 color: settings.themeColor,
                                 textDecoration: "none",
-                                borderBottom: `1px dotted ${settings.themeColor}`
+                                borderBottom: `1px dotted ${settings.themeColor}`,
+                                display: "inline-flex",
+                                alignItems: "center"
                               }}
                               onClick={(e) => {
                                 if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
@@ -703,6 +745,7 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                                 tagName="h3"
                                 style={{ fontWeight: 600, fontSize: "0.95rem", color: settings.themeColor }}
                               />
+                              <span style={{ fontSize: "0.75rem", marginLeft: 2 }}>↗</span>
                             </a>
                           ) : (
                             <EditableText
@@ -739,12 +782,40 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                       )}
                       {section.type === "awards" && (
                         <>
-                          <EditableText
-                            value={entry.title}
-                            onChange={(v) => updateEntryField(section.id, entry.id, "title", v)}
-                            tagName="h3"
-                            style={{ fontWeight: 600, fontSize: "0.95rem" }}
-                          />
+                       {entry.url ? (
+                            <a
+                              href={getContactHref(undefined, entry.url)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: settings.themeColor,
+                                textDecoration: "none",
+                                borderBottom: `1px dotted ${settings.themeColor}`,
+                                display: "inline-flex",
+                                alignItems: "center"
+                              }}
+                              onClick={(e) => {
+                                if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
+                                  e.preventDefault();
+                                }
+                              }}
+                            >
+                              <EditableText
+                                value={entry.title}
+                                onChange={(v) => updateEntryField(section.id, entry.id, "title", v)}
+                                tagName="h3"
+                                style={{ fontWeight: 600, fontSize: "0.95rem", color: settings.themeColor }}
+                              />
+                              <span style={{ fontSize: "0.75rem", marginLeft: 2 }}>↗</span>
+                            </a>
+                          ) : (
+                            <EditableText
+                              value={entry.title}
+                              onChange={(v) => updateEntryField(section.id, entry.id, "title", v)}
+                              tagName="h3"
+                              style={{ fontWeight: 600, fontSize: "0.95rem" }}
+                            />
+                          )}
                           <EditableText
                             value={entry.issuer}
                             onChange={(v) => updateEntryField(section.id, entry.id, "issuer", v)}
@@ -755,12 +826,40 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                       )}
                       {section.type === "volunteer" && (
                         <>
-                          <EditableText
-                            value={entry.role}
-                            onChange={(v) => updateEntryField(section.id, entry.id, "role", v)}
-                            tagName="h3"
-                            style={{ fontWeight: 600, fontSize: "0.95rem" }}
-                          />
+                       {entry.url ? (
+                            <a
+                              href={getContactHref(undefined, entry.url)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: settings.themeColor,
+                                textDecoration: "none",
+                                borderBottom: `1px dotted ${settings.themeColor}`,
+                                display: "inline-flex",
+                                alignItems: "center"
+                              }}
+                              onClick={(e) => {
+                                if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
+                                  e.preventDefault();
+                                }
+                              }}
+                            >
+                              <EditableText
+                                value={entry.role}
+                                onChange={(v) => updateEntryField(section.id, entry.id, "role", v)}
+                                tagName="h3"
+                                style={{ fontWeight: 600, fontSize: "0.95rem", color: settings.themeColor }}
+                              />
+                              <span style={{ fontSize: "0.75rem", marginLeft: 2 }}>↗</span>
+                            </a>
+                          ) : (
+                            <EditableText
+                              value={entry.role}
+                              onChange={(v) => updateEntryField(section.id, entry.id, "role", v)}
+                              tagName="h3"
+                              style={{ fontWeight: 600, fontSize: "0.95rem" }}
+                            />
+                          )}
                           <EditableText
                             value={entry.organization}
                             onChange={(v) => updateEntryField(section.id, entry.id, "organization", v)}
@@ -1212,9 +1311,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "oklch(95% 0.004 250)",
     border: "1px solid var(--border-subtle)",
     borderRadius: "12px",
-    padding: "1px 8px",
+    padding: "3px 8px",
     display: "inline-flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: "4px",
   },
   addEntryBtn: {
