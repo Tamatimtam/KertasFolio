@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Undo, Redo, FileDown, Download, Check, Sparkles } from "lucide-react";
 import { type CV, type CVSection } from "@/types/cv";
-import { getCVById, saveCV } from "@/lib/db";
 import { TEMPLATES } from "@/lib/templates";
+import { clientGetCVById, clientUpdateCV } from "@/lib/storage";
 import SectionList from "@/components/editor/SectionList";
 import StylePanel from "@/components/editor/StylePanel";
 import CVPreview from "@/components/editor/CVPreview";
@@ -32,14 +32,16 @@ export default function Editor({ params }: { params: Promise<{ id: string }> }) 
   useEffect(() => {
     async function loadData() {
       if (!id) return;
-      const data = await getCVById(id);
-      if (data) {
+      try {
+        const data = await clientGetCVById(id);
+        if (!data) throw new Error("Not found");
         setCv(data);
-      } else {
+      } catch {
         console.error("CV not found");
         router.push("/");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadData();
   }, [id, router]);
@@ -69,7 +71,7 @@ export default function Editor({ params }: { params: Promise<{ id: string }> }) 
 
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        await saveCV(updatedCv);
+        await clientUpdateCV(updatedCv);
         setSaveStatus("saved");
       } catch (err) {
         console.error("Autosave failed:", err);
@@ -206,7 +208,7 @@ export default function Editor({ params }: { params: Promise<{ id: string }> }) 
               {saveStatus === "saving" && <span style={styles.savingText}>Autosaving...</span>}
               {saveStatus === "saved" && (
                 <span style={styles.savedText}>
-                  <Check size={12} style={{ marginRight: 3 }} /> Saved to browser
+                  <Check size={12} style={{ marginRight: 3 }} /> Saved
                 </span>
               )}
               {saveStatus === "error" && <span style={styles.errorText}>Save Error</span>}

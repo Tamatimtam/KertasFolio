@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Copy, Trash2, FileText, ArrowRight, Eye } from "lucide-react";
 import { type CV } from "@/types/cv";
-import { getAllCVs, deleteCV, duplicateCV, saveCV } from "@/lib/db";
 import { TEMPLATES, createDefaultCV } from "@/lib/templates";
+import { clientGetAllCVs, clientCreateCV, clientDeleteCV, clientDuplicateCV } from "@/lib/storage";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -19,9 +19,14 @@ export default function Dashboard() {
   // Load CVs on mount
   useEffect(() => {
     async function loadData() {
-      const data = await getAllCVs();
-      setCvs(data);
-      setLoading(false);
+      try {
+        const data = await clientGetAllCVs();
+        setCvs(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to load CVs:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     loadData();
   }, []);
@@ -32,8 +37,8 @@ export default function Dashboard() {
 
     try {
       const defaultCV = createDefaultCV(newCvName.trim(), selectedTemplate);
-      await saveCV(defaultCV);
-      router.push(`/editor/${defaultCV.id}`);
+      const created = await clientCreateCV(defaultCV);
+      router.push(`/editor/${created.id}`);
     } catch (err) {
       console.error("Failed to create CV:", err);
     }
@@ -45,7 +50,7 @@ export default function Dashboard() {
     
     if (confirm("Are you sure you want to delete this CV version? This action cannot be undone.")) {
       try {
-        await deleteCV(id);
+        await clientDeleteCV(id);
         setCvs(cvs.filter((cv) => cv.id !== id));
       } catch (err) {
         console.error("Failed to delete CV:", err);
@@ -58,7 +63,7 @@ export default function Dashboard() {
     e.stopPropagation();
     
     try {
-      const newCV = await duplicateCV(cv, `${cv.name} (Copy)`);
+      const newCV = await clientDuplicateCV(cv);
       setCvs([newCV, ...cvs]);
     } catch (err) {
       console.error("Failed to duplicate CV:", err);
@@ -80,7 +85,7 @@ export default function Dashboard() {
       <header style={styles.header}>
         <div style={styles.headerContainer}>
           <div style={styles.logoGroup}>
-            <div style={styles.logoMark}>KF</div>
+            <img src="/logo.png" alt="KertasFolio Logo" style={styles.logoImg} />
             <div>
               <h1 style={styles.logoText}>KertasFolio</h1>
               <p style={styles.logoTagline}>Satisfying Tactile CV Workspace</p>
@@ -324,6 +329,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: "flex",
     alignItems: "center",
     gap: "12px",
+  },
+  logoImg: {
+    width: "40px",
+    height: "40px",
+    objectFit: "contain",
   },
   logoMark: {
     width: "40px",
