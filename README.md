@@ -76,9 +76,3 @@ kertasfolio/
 ├── PRODUCT.md          # Product definitions and visual style anti-patterns
 └── CICD_GUIDE.md       # Junior dev guide to Git and Vercel integrations
 ```
-
----
-
-## 🏷️ GitHub Repository Topics
-Add these tags to your public repository to make it easily discoverable:
-`nextjs`, `typescript`, `wysiwyg-editor`, `resume-builder`, `cv-maker`, `dexie-js`, `indexeddb`, `pdf-generation`, `docx-generation`, `rest-api`, `ai-automation`, `tailwindcss-alternative`.
