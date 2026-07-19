@@ -494,12 +494,37 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                 <div key={entry.id} className="entry-item" style={styles.entryRow}>
                   <div style={styles.entryHeaderRow}>
                     <div>
-                      <EditableText
-                        value={entry.degree}
-                        onChange={(v) => updateEntryField(section.id, entry.id, "degree", v)}
-                        tagName="h3"
-                        style={{ fontWeight: 600, fontSize: "0.95rem" }}
-                      />
+                      {entry.url ? (
+                        <a
+                          href={getContactHref(undefined, entry.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: settings.themeColor,
+                            textDecoration: "none",
+                            borderBottom: `1px dotted ${settings.themeColor}`
+                          }}
+                          onClick={(e) => {
+                            if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          <EditableText
+                            value={entry.degree}
+                            onChange={(v) => updateEntryField(section.id, entry.id, "degree", v)}
+                            tagName="h3"
+                            style={{ fontWeight: 600, fontSize: "0.95rem", color: settings.themeColor }}
+                          />
+                        </a>
+                      ) : (
+                        <EditableText
+                          value={entry.degree}
+                          onChange={(v) => updateEntryField(section.id, entry.id, "degree", v)}
+                          tagName="h3"
+                          style={{ fontWeight: 600, fontSize: "0.95rem" }}
+                        />
+                      )}
                       <EditableText
                         value={entry.institution}
                         onChange={(v) => updateEntryField(section.id, entry.id, "institution", v)}
@@ -656,12 +681,37 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                     <div>
                       {section.type === "certifications" && (
                         <>
-                          <EditableText
-                            value={entry.name}
-                            onChange={(v) => updateEntryField(section.id, entry.id, "name", v)}
-                            tagName="h3"
-                            style={{ fontWeight: 600, fontSize: "0.95rem" }}
-                          />
+                          {entry.url || entry.credentialUrl ? (
+                            <a
+                              href={getContactHref(undefined, entry.url || entry.credentialUrl)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: settings.themeColor,
+                                textDecoration: "none",
+                                borderBottom: `1px dotted ${settings.themeColor}`
+                              }}
+                              onClick={(e) => {
+                                if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
+                                  e.preventDefault();
+                                }
+                              }}
+                            >
+                              <EditableText
+                                value={entry.name}
+                                onChange={(v) => updateEntryField(section.id, entry.id, "name", v)}
+                                tagName="h3"
+                                style={{ fontWeight: 600, fontSize: "0.95rem", color: settings.themeColor }}
+                              />
+                            </a>
+                          ) : (
+                            <EditableText
+                              value={entry.name}
+                              onChange={(v) => updateEntryField(section.id, entry.id, "name", v)}
+                              tagName="h3"
+                              style={{ fontWeight: 600, fontSize: "0.95rem" }}
+                            />
+                          )}
                           <EditableText
                             value={entry.issuer}
                             onChange={(v) => updateEntryField(section.id, entry.id, "issuer", v)}

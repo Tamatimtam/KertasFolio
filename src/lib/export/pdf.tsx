@@ -3,7 +3,17 @@ import { type CV } from "@/types/cv";
 
 export async function exportPDF(cv: CV) {
   // Dynamically load the react-pdf renderer on client side to avoid build/SSR issues
-  const { pdf, Document, Page, View, Text, StyleSheet, Font } = await import("@react-pdf/renderer");
+  const { pdf, Document, Page, View, Text, Link, StyleSheet, Font } = await import("@react-pdf/renderer");
+
+  const getContactHref = (icon: string | undefined, value: string, url?: string) => {
+    const cleanVal = (url || value).trim();
+    if (icon === "email" && !cleanVal.startsWith("mailto:")) return `mailto:${cleanVal}`;
+    if (icon === "phone" && !cleanVal.startsWith("tel:") && !cleanVal.startsWith("https://wa.me/")) return `tel:${cleanVal.replace(/[^+\d]/g, "")}`;
+    if (cleanVal.startsWith("http://") || cleanVal.startsWith("https://")) {
+      return cleanVal;
+    }
+    return `https://${cleanVal}`;
+  };
 
   // Define styles dynamically based on CV settings
   const isSerif = cv.settings.fontFamily === "Playfair Display";
@@ -44,6 +54,13 @@ export async function exportPDF(cv: CV) {
     contactText: {
       fontSize: 8,
       color: "#6b7280",
+    },
+    contactLink: {
+      textDecoration: "none",
+    },
+    inlineLink: {
+      textDecoration: "underline",
+      color: primaryColor,
     },
     summarySection: {
       marginBottom: 16,
@@ -162,11 +179,15 @@ export async function exportPDF(cv: CV) {
           <Text style={styles.title}>{cv.personalInfo.title}</Text>
           
           <View style={styles.contactsRow}>
-            {cv.personalInfo.contacts.map((contact) => (
-              <Text key={contact.id} style={styles.contactText}>
-                {contact.label}: {contact.value}
-              </Text>
-            ))}
+            {cv.personalInfo.contacts
+              .filter((c) => c.value.trim() !== "")
+              .map((contact) => (
+                <Link key={contact.id} src={getContactHref(contact.icon, contact.value, contact.url)} style={styles.contactLink}>
+                  <Text style={styles.contactText}>
+                    {contact.label}: {contact.value}
+                  </Text>
+                </Link>
+              ))}
           </View>
         </View>
 
@@ -193,7 +214,13 @@ export async function exportPDF(cv: CV) {
                         <View>
                           <Text style={styles.entryTitle}>{entry.role}</Text>
                           <Text style={styles.entrySub}>
-                            {entry.company}
+                            {entry.companyUrl ? (
+                              <Link src={getContactHref(undefined, entry.companyUrl)}>
+                                <Text style={{ color: primaryColor, textDecoration: "underline" }}>{entry.company}</Text>
+                              </Link>
+                            ) : (
+                              entry.company
+                            )}
                             {entry.location ? ` — ${entry.location}` : ""}
                           </Text>
                         </View>
@@ -220,7 +247,15 @@ export async function exportPDF(cv: CV) {
                     <View key={entry.id} style={styles.entryRow}>
                       <View style={styles.entryHeader}>
                         <View>
-                          <Text style={styles.entryTitle}>{entry.degree}</Text>
+                          <Text style={styles.entryTitle}>
+                            {entry.url ? (
+                              <Link src={getContactHref(undefined, entry.url)}>
+                                <Text style={{ color: primaryColor, textDecoration: "underline" }}>{entry.degree}</Text>
+                              </Link>
+                            ) : (
+                              entry.degree
+                            )}
+                          </Text>
                           <Text style={styles.entrySub}>
                             {entry.institution}
                             {entry.gpa ? ` (GPA: ${entry.gpa})` : ""}
@@ -238,9 +273,17 @@ export async function exportPDF(cv: CV) {
               {section.type === "skills" && (
                 <View style={styles.skillsContainer}>
                   {section.entries.map((entry) => (
-                    <Text key={entry.id} style={styles.skillBadge}>
-                      {entry.name}
-                    </Text>
+                    entry.url ? (
+                      <Link key={entry.id} src={getContactHref(undefined, entry.url)} style={{ textDecoration: "none" }}>
+                        <Text style={styles.skillBadge}>
+                          {entry.name}
+                        </Text>
+                      </Link>
+                    ) : (
+                      <Text key={entry.id} style={styles.skillBadge}>
+                        {entry.name}
+                      </Text>
+                    )
                   ))}
                 </View>
               )}
@@ -249,7 +292,15 @@ export async function exportPDF(cv: CV) {
                 <View style={styles.projectsGrid}>
                   {section.entries.map((entry) => (
                     <View key={entry.id} style={styles.projectRow}>
-                      <Text style={styles.projectTitle}>{entry.title}</Text>
+                      <Text style={styles.projectTitle}>
+                        {entry.liveUrl ? (
+                          <Link src={getContactHref(undefined, entry.liveUrl)}>
+                            <Text style={{ color: primaryColor, textDecoration: "underline" }}>{entry.title}</Text>
+                          </Link>
+                        ) : (
+                          entry.title
+                        )}
+                      </Text>
                       <Text style={styles.projectDesc}>{entry.description}</Text>
                       <View style={styles.projectTags}>
                         {entry.techStack.map((tech, idx) => (
@@ -266,18 +317,27 @@ export async function exportPDF(cv: CV) {
               {/* Render references/certs in matching simplified styles */}
               {["certifications", "languages", "awards", "volunteer", "publications", "references"].includes(section.type) && (
                 <View>
-                  {(section.entries as any[]).map((entry) => (
-                    <View key={entry.id} style={{ marginBottom: 4 }}>
-                      <Text style={{ fontWeight: "bold", fontFamily: boldFont }}>
-                        {entry.name || entry.title || entry.role}
-                      </Text>
-                      <Text style={{ fontSize: 8, color: "#4b5563" }}>
-                        {entry.issuer || entry.organization || entry.publisher || entry.proficiency || entry.company}
-                        {entry.date ? ` (${entry.date})` : ""}
-                        {entry.startDate ? ` (${entry.startDate} - ${entry.endDate})` : ""}
-                      </Text>
-                    </View>
-                  ))}
+                  {(section.entries as any[]).map((entry) => {
+                    const targetUrl = entry.url || entry.credentialUrl;
+                    return (
+                      <View key={entry.id} style={{ marginBottom: 4 }}>
+                        <Text style={{ fontWeight: "bold", fontFamily: boldFont }}>
+                          {targetUrl ? (
+                            <Link src={getContactHref(undefined, targetUrl)}>
+                              <Text style={{ color: primaryColor, textDecoration: "underline" }}>{entry.name || entry.title || entry.role}</Text>
+                            </Link>
+                          ) : (
+                            entry.name || entry.title || entry.role
+                          )}
+                        </Text>
+                        <Text style={{ fontSize: 8, color: "#4b5563" }}>
+                          {entry.issuer || entry.organization || entry.publisher || entry.proficiency || entry.company}
+                          {entry.date ? ` (${entry.date})` : ""}
+                          {entry.startDate ? ` (${entry.startDate} - ${entry.endDate})` : ""}
+                        </Text>
+                      </View>
+                    );
+                  })}
                 </View>
               )}
             </View>

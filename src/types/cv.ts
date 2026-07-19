@@ -43,6 +43,7 @@ export interface EducationEntry {
   endDate: string;
   gpa?: string;
   description?: string;
+  url?: string;
 }
 
 export interface EducationSection {
@@ -58,6 +59,7 @@ export interface SkillEntry {
   name: string;
   level?: number; // 0 to 5 or percentage, or string level
   category?: string; // e.g., "Languages", "Frontend", "Backend"
+  url?: string;
 }
 
 export interface SkillsSection {
@@ -94,6 +96,7 @@ export interface CertificationEntry {
   date: string;
   credentialId?: string;
   credentialUrl?: string;
+  url?: string;
 }
 
 export interface CertificationsSection {
@@ -108,6 +111,7 @@ export interface LanguageEntry {
   id: string;
   name: string;
   proficiency: string; // e.g., "Native", "Fluent", "Conversational"
+  url?: string;
 }
 
 export interface LanguagesSection {
@@ -124,6 +128,7 @@ export interface AwardEntry {
   issuer: string;
   date: string;
   description?: string;
+  url?: string;
 }
 
 export interface AwardsSection {
@@ -141,6 +146,7 @@ export interface VolunteerEntry {
   startDate: string;
   endDate: string;
   description?: string;
+  url?: string;
 }
 
 export interface VolunteerSection {
@@ -175,6 +181,7 @@ export interface ReferenceEntry {
   company: string;
   email?: string;
   phone?: string;
+  url?: string;
 }
 
 export interface ReferencesSection {

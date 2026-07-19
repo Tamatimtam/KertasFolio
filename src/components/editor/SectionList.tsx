@@ -497,6 +497,18 @@ export default function SectionList({ cv, onChange, onAddSection }: SectionListP
                       style={{ ...styles.formInputMini, flex: 1 }}
                     />
                   </div>
+                  <input
+                    type="text"
+                    placeholder="URL / Website (optional)"
+                    value={entry.url || ""}
+                    onChange={(e) => {
+                      const updated = currentSection.entries.map((ent: any) => 
+                        ent.id === entry.id ? { ...ent, url: e.target.value } : ent
+                      );
+                      updateSectionEntries(currentSection.id, updated);
+                    }}
+                    style={styles.formInputMini}
+                  />
                 </>
               )}
 
@@ -510,6 +522,18 @@ export default function SectionList({ cv, onChange, onAddSection }: SectionListP
                     onChange={(e) => {
                       const updated = currentSection.entries.map((ent: any) => 
                         ent.id === entry.id ? { ...ent, name: e.target.value } : ent
+                      );
+                      updateSectionEntries(currentSection.id, updated);
+                    }}
+                    style={styles.formInputMini}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Link URL (optional)"
+                    value={entry.url || ""}
+                    onChange={(e) => {
+                      const updated = currentSection.entries.map((ent: any) => 
+                        ent.id === entry.id ? { ...ent, url: e.target.value } : ent
                       );
                       updateSectionEntries(currentSection.id, updated);
                     }}
@@ -593,6 +617,18 @@ export default function SectionList({ cv, onChange, onAddSection }: SectionListP
                           proficiency: ent.proficiency !== undefined ? e.target.value : undefined,
                           company: ent.company !== undefined ? e.target.value : undefined,
                         } : ent
+                      );
+                      updateSectionEntries(currentSection.id, updated);
+                    }}
+                    style={styles.formInputMini}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Link URL (optional)"
+                    value={entry.url || ""}
+                    onChange={(e) => {
+                      const updated = currentSection.entries.map((ent: any) => 
+                        ent.id === entry.id ? { ...ent, url: e.target.value } : ent
                       );
                       updateSectionEntries(currentSection.id, updated);
                     }}
