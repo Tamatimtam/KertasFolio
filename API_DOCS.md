@@ -1,7 +1,7 @@
 # KertasFolio Local API Documentation
 
 > **Scope**: This API runs on your **local machine only** when you execute `npm run dev`.
-> It is intended for AI automation scripts, personal CLI tools, or local integrations.
+> It is intended for custom automation scripts, personal CLI tools, or local integrations.
 > The live Vercel deployment at `kertasfolio.vercel.app` does **not** expose these endpoints.
 
 **Base URL (local):** `http://localhost:3000/api`
@@ -23,7 +23,7 @@
    - [Export raw JSON](#get-apicvsidexport)
 5. [Template Endpoints](#template-endpoints)
    - [List templates](#get-apitemplates)
-6. [Common Patterns for AI Use](#common-patterns-for-ai-use)
+6. [Common Patterns for Scripting & Automation](#common-patterns-for-scripting--automation)
 7. [Error Reference](#error-reference)
 
 ---
@@ -356,7 +356,7 @@ Fully replace an existing CV with new data. The `id` in the URL is always used â
 **Response** `200 OK` â€” Updated CV object.
 
 > [!TIP]
-> This is the primary endpoint for AI-driven editing. Fetch the current CV with GET, modify the JavaScript object, then PUT the whole thing back.
+> This is the primary endpoint for automated editing. Fetch the current CV with GET, modify the JavaScript object, then PUT the whole thing back.
 
 ---
 
@@ -415,7 +415,7 @@ Returns the list of built-in CV templates.
 
 ---
 
-## Common Patterns for AI Use
+## Common Patterns for Scripting & Automation
 
 ### Pattern 1: Add a new work experience entry
 

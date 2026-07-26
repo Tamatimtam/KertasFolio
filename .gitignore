@@ -40,7 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# impeccable live session logs
+# impeccable live session logs & AI agent files
 .impeccable/
+.agents/
+.gemini/
+AGENTS.md
+CLAUDE.md
 data/
 

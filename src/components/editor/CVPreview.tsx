@@ -348,11 +348,28 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
   // Render Section Lists based on type
   const renderSectionContent = (section: CVSection) => {
     const dividerStyle = getDividerStyle();
+    const isClassic = cv.templateId === "classic";
     
     return (
       <div key={section.id} style={{ ...styles.cvSection, fontFamily: fonts.body }}>
         {/* Section Header */}
-        <div style={{ ...styles.cvSectionHeader, ...dividerStyle }}>
+        <div 
+          style={{ 
+            ...styles.cvSectionHeader, 
+            ...dividerStyle,
+            ...(isClassic ? {
+              textAlign: "center",
+              borderBottom: `1px solid ${settings.themeColor}`,
+              paddingBottom: "4px",
+              marginBottom: "14px",
+            } : {
+              borderLeft: `3px solid ${settings.themeColor}`,
+              paddingLeft: "10px",
+              borderBottom: "none",
+              marginBottom: "14px",
+            })
+          }}
+        >
           <EditableText
             value={section.title}
             onChange={(val) => updateSectionTitle(section.id, val)}
@@ -360,8 +377,10 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
             style={{
               fontFamily: fonts.display,
               color: settings.themeColor,
-              fontSize: "1.25rem",
-              fontWeight: 600,
+              fontSize: isClassic ? "1.15rem" : "1.1rem",
+              fontWeight: isClassic ? 600 : 700,
+              textTransform: isClassic ? "uppercase" : "none",
+              letterSpacing: isClassic ? "0.08em" : "0.01em",
             }}
           />
         </div>
@@ -402,7 +421,7 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                             value={entry.company}
                             onChange={(v) => updateEntryField(section.id, entry.id, "company", v)}
                             tagName="span"
-                            style={{ fontSize: "0.9rem", color: settings.themeColor, fontStyle: "italic" }}
+                            style={{ fontSize: "0.9rem", color: settings.themeColor, fontStyle: isClassic ? "italic" : "normal" }}
                           />
                           <span style={{ fontSize: "0.75rem", marginLeft: 2 }}>↗</span>
                         </a>
@@ -411,7 +430,7 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                           value={entry.company}
                           onChange={(v) => updateEntryField(section.id, entry.id, "company", v)}
                           tagName="span"
-                          style={{ fontSize: "0.9rem", color: "var(--muted-text)", fontStyle: "italic" }}
+                          style={{ fontSize: "0.9rem", color: "var(--muted-text)", fontStyle: isClassic ? "italic" : "normal" }}
                         />
                       )}
                       {entry.location && (
@@ -426,7 +445,15 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                       )}
                     </div>
                     <div style={styles.entryMetaCol}>
-                      <span style={styles.entryDates}>
+                      <span style={{
+                        ...styles.entryDates,
+                        ...(!isClassic ? {
+                          backgroundColor: "oklch(96% 0.003 250)",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          fontSize: "0.75rem"
+                        } : {})
+                      }}>
                         <EditableText
                           value={entry.startDate}
                           onChange={(v) => updateEntryField(section.id, entry.id, "startDate", v)}
@@ -455,7 +482,9 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
                     {entry.description.map((bullet, idx) => (
                       <li key={idx} style={styles.bulletItem}>
                         <div style={{ display: "flex", gap: "6px", alignItems: "flex-start", width: "100%" }}>
-                          <span style={{ color: settings.themeColor, userSelect: "none" }}>•</span>
+                          <span style={{ color: settings.themeColor, userSelect: "none" }}>
+                            {isClassic ? "•" : "—"}
+                          </span>
                           <EditableText
                             value={bullet}
                             onChange={(v) => {
@@ -962,35 +991,6 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
     );
   };
 
-  // Modern two-column layout
-  const renderModernLayout = () => {
-    const visibleSections = cv.sections.filter((s) => s.visible);
-    
-    // Split sections into main and sidebar
-    // Sidebar: skills, languages, references, certifications
-    // Main: work, education, projects, awards, volunteer, publications
-    const sidebarSections = visibleSections.filter((s) => 
-      ["skills", "languages", "references", "certifications"].includes(s.type)
-    );
-    const mainSections = visibleSections.filter((s) => 
-      !["skills", "languages", "references", "certifications"].includes(s.type)
-    );
-
-    return (
-      <div style={styles.modernLayoutGrid}>
-        {/* Main Column */}
-        <div style={styles.modernMainCol}>
-          {mainSections.map(renderSectionContent)}
-        </div>
-
-        {/* Sidebar Column */}
-        <div style={{ ...styles.modernSidebarCol, borderLeft: `1px solid var(--border-subtle)` }}>
-          {sidebarSections.map(renderSectionContent)}
-        </div>
-      </div>
-    );
-  };
-
   // Photo shape border-radius
   const getPhotoRadius = () => {
     if (settings.photoShape === "circle") return "50%";
@@ -998,68 +998,113 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
     return "0px";
   };
 
-  return (
-    <div className="a4-sheet" style={{ ...styles.sheet, ...cvStyles }}>
-      {/* CV Header / Personal Info */}
-      <div style={styles.cvHeader}>
-        <div style={styles.headerInfoGroup}>
-          <EditableText
-            value={cv.personalInfo.name}
-            onChange={(val) => updatePersonalField("name", val)}
-            tagName="h1"
-            style={{
-              fontFamily: fonts.display,
-              fontSize: "2.2rem",
-              fontWeight: 700,
-              lineHeight: 1.1,
-              color: settings.themeColor,
-              letterSpacing: "-0.02em",
-            }}
-          />
-          <EditableText
-            value={cv.personalInfo.title}
-            onChange={(val) => updatePersonalField("title", val)}
-            tagName="p"
-            style={{
-              fontSize: "1.1rem",
-              fontWeight: 500,
-              color: "var(--muted-text)",
-              marginTop: 4,
-            }}
-          />
+    const isClassicHeader = cv.templateId === "classic";
 
-           {/* Contact Links */}
-          <div style={styles.contactsRow}>
-            {cv.personalInfo.contacts
-              .filter((contact) => contact.value.trim() !== "")
-              .map((contact) => {
-                const href = getContactHref(contact.icon, contact.value, contact.url);
-                return (
-                  <span key={contact.id} style={styles.contactItem}>
-                    {renderContactIcon(contact.icon)}
-                    <a 
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => {
-                        // Prevent navigation if editing
-                        if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
-                          e.preventDefault();
-                        }
+    return (
+      <div className="a4-sheet" style={{ ...styles.sheet, ...cvStyles }}>
+        {/* CV Header / Personal Info */}
+        <div 
+          style={{
+            ...styles.cvHeader,
+            ...(isClassicHeader ? {
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+              borderBottom: "1px solid var(--border-subtle)",
+              paddingBottom: "16px",
+              marginBottom: "20px",
+            } : {
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginBottom: "20px",
+            })
+          }}
+        >
+          <div style={{ ...styles.headerInfoGroup, ...(isClassicHeader ? { alignItems: "center" } : {}) }}>
+            <EditableText
+              value={cv.personalInfo.name}
+              onChange={(val) => updatePersonalField("name", val)}
+              tagName="h1"
+              style={{
+                fontFamily: fonts.display,
+                fontSize: isClassicHeader ? "2.4rem" : "2.1rem",
+                fontWeight: 700,
+                lineHeight: 1.1,
+                color: settings.themeColor,
+                letterSpacing: isClassicHeader ? "0.02em" : "-0.03em",
+              }}
+            />
+            <EditableText
+              value={cv.personalInfo.title}
+              onChange={(val) => updatePersonalField("title", val)}
+              tagName="p"
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: isClassicHeader ? 400 : 500,
+                fontStyle: isClassicHeader ? "italic" : "normal",
+                color: "var(--muted-text)",
+                marginTop: 4,
+              }}
+            />
+
+             {/* Contact Links */}
+            <div 
+              style={{
+                ...styles.contactsRow,
+                ...(isClassicHeader ? {
+                  justifyContent: "center",
+                  marginTop: "12px",
+                  gap: "12px",
+                } : {
+                  marginTop: "12px",
+                  gap: "8px",
+                  flexWrap: "wrap"
+                })
+              }}
+            >
+              {cv.personalInfo.contacts
+                .filter((contact) => contact.value.trim() !== "")
+                .map((contact) => {
+                  const href = getContactHref(contact.icon, contact.value, contact.url);
+                  return (
+                    <span 
+                      key={contact.id} 
+                      style={{
+                        ...styles.contactItem,
+                        ...(!isClassicHeader ? {
+                          backgroundColor: "oklch(99% 0.001 250)",
+                          border: "1px solid var(--border-subtle)",
+                          borderRadius: "4px",
+                          padding: "3px 8px",
+                          fontSize: "0.78rem"
+                        } : {})
                       }}
-                      style={styles.contactLink}
                     >
-                      <EditableText
-                        value={contact.value}
-                        onChange={(val) => updateContactValue(contact.id, val)}
-                        tagName="span"
-                      />
-                    </a>
-                  </span>
-                );
-              })}
+                      {renderContactIcon(contact.icon)}
+                      <a 
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          // Prevent navigation if editing
+                          if (document.activeElement?.contains(e.currentTarget) || (e.target as HTMLElement).isContentEditable) {
+                            e.preventDefault();
+                          }
+                        }}
+                        style={styles.contactLink}
+                      >
+                        <EditableText
+                          value={contact.value}
+                          onChange={(val) => updateContactValue(contact.id, val)}
+                          tagName="span"
+                        />
+                      </a>
+                    </span>
+                  );
+                })}
+            </div>
           </div>
-        </div>
 
         {/* Optional Profile Photo */}
         {settings.showPhoto && (
@@ -1129,14 +1174,10 @@ export default function CVPreview({ cv, onChange }: CVPreviewProps) {
         </div>
       )}
 
-      {/* Render layout based on template */}
-      {cv.templateId === "modern" ? (
-        renderModernLayout()
-      ) : (
-        <div style={styles.singleColumnLayout}>
-          {cv.sections.filter((s) => s.visible).map(renderSectionContent)}
-        </div>
-      )}
+      {/* Render layout */}
+      <div style={styles.singleColumnLayout}>
+        {cv.sections.filter((s) => s.visible).map(renderSectionContent)}
+      </div>
     </div>
   );
 }
@@ -1328,19 +1369,5 @@ const styles: { [key: string]: React.CSSProperties } = {
   singleColumnLayout: {
     display: "flex",
     flexDirection: "column",
-  },
-  modernLayoutGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 200px",
-    gap: "24px",
-  },
-  modernMainCol: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  modernSidebarCol: {
-    display: "flex",
-    flexDirection: "column",
-    paddingLeft: "16px",
   },
 };

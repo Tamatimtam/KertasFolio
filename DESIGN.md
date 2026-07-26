@@ -1,4 +1,3 @@
-<!-- SEED: re-run /impeccable document once there's code to capture the actual tokens and components. -->
 ---
 name: KertasFolio Design System
 description: Tactile, precise, paper-like visual language for resume editing

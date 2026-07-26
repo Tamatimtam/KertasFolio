@@ -3,13 +3,14 @@
 import { useEffect, useState, useRef, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Undo, Redo, FileDown, Download, Check, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, Undo, Redo, FileDown, Download, Check, Sparkles, HelpCircle } from "lucide-react";
 import { type CV, type CVSection } from "@/types/cv";
 import { TEMPLATES } from "@/lib/templates";
 import { clientGetCVById, clientUpdateCV } from "@/lib/storage";
 import SectionList from "@/components/editor/SectionList";
 import StylePanel from "@/components/editor/StylePanel";
 import CVPreview from "@/components/editor/CVPreview";
+import { startOnboardingTour } from "@/lib/onboarding";
 
 // Client-side PDF & DOCX imports will be handled dynamically or in export utility files to prevent SSR issues
 
@@ -45,6 +46,16 @@ export default function Editor({ params }: { params: Promise<{ id: string }> }) 
     }
     loadData();
   }, [id, router]);
+
+  // Auto-run onboarding tour for first-time users
+  useEffect(() => {
+    if (!loading && cv) {
+      const timer = setTimeout(() => {
+        startOnboardingTour(false);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, cv]);
 
   // Debounced Autosave Ref
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -196,7 +207,7 @@ export default function Editor({ params }: { params: Promise<{ id: string }> }) 
           <Link href="/" style={styles.backBtn} title="Back to Dashboard">
             <ArrowLeft size={16} />
           </Link>
-          <div style={styles.titleWrapper}>
+          <div style={styles.titleWrapper} data-tour="version-name">
             <input
               type="text"
               value={cv.name}
@@ -241,6 +252,7 @@ export default function Editor({ params }: { params: Promise<{ id: string }> }) 
           {/* Quick layout selector */}
           <select
             value={cv.templateId}
+            data-tour="template-select"
             onChange={(e) => {
               const tmpl = TEMPLATES.find((t) => t.id === e.target.value);
               if (tmpl) {
@@ -269,19 +281,31 @@ export default function Editor({ params }: { params: Promise<{ id: string }> }) 
         </div>
 
         <div style={styles.toolbarRight}>
+          <div style={{ display: "flex", gap: "8px" }} data-tour="export-buttons">
+            <button 
+              type="button" 
+              style={styles.exportBtn}
+              onClick={triggerPdfExport}
+            >
+              <FileDown size={15} style={{ marginRight: 6 }} /> PDF
+            </button>
+            <button 
+              type="button" 
+              style={{ ...styles.exportBtn, backgroundColor: "#0f172a", color: "#ffffff" }}
+              onClick={triggerDocxExport}
+            >
+              <Download size={15} style={{ marginRight: 6 }} /> Word / DOCX
+            </button>
+          </div>
+
           <button 
             type="button" 
-            style={styles.exportBtn}
-            onClick={triggerPdfExport}
+            style={styles.helpBtn}
+            onClick={() => startOnboardingTour(true)}
+            title="Take Onboarding Tour Again"
+            data-tour="help-button"
           >
-            <FileDown size={15} style={{ marginRight: 6 }} /> PDF
-          </button>
-          <button 
-            type="button" 
-            style={{ ...styles.exportBtn, backgroundColor: "#0f172a", color: "#ffffff" }}
-            onClick={triggerDocxExport}
-          >
-            <Download size={15} style={{ marginRight: 6 }} /> Word / DOCX
+            <HelpCircle size={15} style={{ marginRight: 4 }} /> ?
           </button>
         </div>
       </div>
@@ -289,29 +313,33 @@ export default function Editor({ params }: { params: Promise<{ id: string }> }) 
       {/* Main Workspace */}
       <div style={styles.workspace}>
         {/* Left: Reorder lists */}
-        <SectionList
-          cv={cv}
-          onChange={updateCV}
-          onAddSection={handleAddSection}
-        />
+        <div data-tour="section-list" style={{ display: "flex", height: "100%" }}>
+          <SectionList
+            cv={cv}
+            onChange={updateCV}
+            onAddSection={handleAddSection}
+          />
+        </div>
 
         {/* Center: A4 sheet editor preview canvas */}
-        <div style={styles.canvasContainer}>
+        <div style={styles.canvasContainer} data-tour="cv-preview">
           <div style={styles.zoomWrapper}>
             <CVPreview cv={cv} onChange={updateCV} />
           </div>
         </div>
 
         {/* Right: Style options panel */}
-        <StylePanel
-          settings={cv.settings}
-          onChange={(newSettings) => {
-            updateCV({
-              ...cv,
-              settings: newSettings,
-            });
-          }}
-        />
+        <div data-tour="style-panel" style={{ display: "flex", height: "100%" }}>
+          <StylePanel
+            settings={cv.settings}
+            onChange={(newSettings) => {
+              updateCV({
+                ...cv,
+                settings: newSettings,
+              });
+            }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -451,6 +479,19 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: "flex",
     alignItems: "center",
     transition: "background-color var(--transition-fast)",
+  },
+  helpBtn: {
+    backgroundColor: "#ffffff",
+    border: "1px solid var(--border-subtle)",
+    color: "var(--primary)",
+    padding: "8px 12px",
+    borderRadius: "var(--radius-sm)",
+    fontWeight: 700,
+    fontSize: "0.9rem",
+    display: "flex",
+    alignItems: "center",
+    cursor: "pointer",
+    transition: "background-color var(--transition-fast), border-color var(--transition-fast)",
   },
   workspace: {
     display: "flex",

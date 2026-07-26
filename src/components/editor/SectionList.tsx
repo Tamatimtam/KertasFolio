@@ -678,7 +678,7 @@ export default function SectionList({ cv, onChange, onAddSection }: SectionListP
   return (
     <div style={styles.sidebar}>
       {/* Tab Switcher */}
-      <div style={styles.tabContainer}>
+      <div style={styles.tabContainer} data-tour="section-tabs">
         <button
           type="button"
           onClick={() => setActiveTab("content")}
@@ -706,7 +706,7 @@ export default function SectionList({ cv, onChange, onAddSection }: SectionListP
       </div>
 
       {activeTab === "layout" ? (
-        <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+        <div style={{ display: "flex", flexDirection: "column", flex: 1 }} data-tour="layout-manager">
           <div style={styles.header}>
             <h3 style={styles.title}>Document Layout</h3>
             <p style={styles.subtitle}>Drag to reorder CV sections</p>
@@ -755,7 +755,7 @@ export default function SectionList({ cv, onChange, onAddSection }: SectionListP
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-          <div style={styles.sectionSelectorContainer}>
+          <div style={styles.sectionSelectorContainer} data-tour="active-section-selector">
             <label style={styles.addLabel}>Active Section</label>
             <select
               value={selectedSectionId}

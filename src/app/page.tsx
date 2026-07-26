@@ -137,25 +137,6 @@ export default function Dashboard() {
                         <div style={{ ...styles.skeletonLine, width: "70%", height: "4px" }}></div>
                       </div>
                     )}
-                    {tmpl.id === "modern" && (
-                      <div style={{ display: "flex", width: "100%", height: "100%", gap: "8px" }}>
-                        {/* Left Sidebar */}
-                        <div style={{ width: "35%", display: "flex", flexDirection: "column", gap: "6px", borderRight: "1px solid var(--border-subtle)", paddingRight: "6px", height: "100%" }}>
-                          <div style={{ ...styles.skeletonLineShort, width: "80%", height: "6px", marginBottom: "2px" }}></div>
-                          <div style={{ ...styles.skeletonLine, width: "90%", height: "3px" }}></div>
-                          <div style={{ ...styles.skeletonLine, width: "70%", height: "3px" }}></div>
-                          <div style={{ ...styles.skeletonLineShort, width: "80%", height: "6px", marginTop: "4px", marginBottom: "2px" }}></div>
-                          <div style={{ ...styles.skeletonLine, width: "50%", height: "3px" }}></div>
-                        </div>
-                        {/* Right Main */}
-                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", height: "100%" }}>
-                          <div style={{ ...styles.skeletonLine, width: "70%", height: "8px" }}></div>
-                          <div style={{ ...styles.skeletonLineShort, width: "40%", height: "5px", marginBottom: "6px" }}></div>
-                          <div style={{ ...styles.skeletonLine, width: "100%", height: "3px" }}></div>
-                          <div style={{ ...styles.skeletonLine, width: "95%", height: "3px" }}></div>
-                        </div>
-                      </div>
-                    )}
                     {tmpl.id === "minimal" && (
                       <div style={{ display: "flex", flexDirection: "column", width: "100%", justifyContent: "center" }}>
                         <div style={{ ...styles.skeletonLine, width: "40%", height: "10px", marginBottom: "4px" }}></div>

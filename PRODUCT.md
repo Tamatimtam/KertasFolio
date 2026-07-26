@@ -9,10 +9,10 @@ product
 web
 
 ## Users
-Job-seekers, developers, designers, and professionals who need to maintain multiple versions of their CV/resume. They need a highly responsive, visual, and satisfying way to edit their CVs in real-time, customize templates, and export clean PDFs/DOCXs. They also want to use AI coding agents (like Gemini/Antigravity) to automate CV updates through a local REST API.
+Job-seekers, developers, designers, and professionals who need to maintain multiple versions of their CV/resume. They need a highly responsive, visual, and satisfying way to edit their CVs in real-time, customize templates, and export clean PDFs/DOCXs. They also want to use automated scripts and local tools to update CVs through a local REST API.
 
 ## Product Purpose
-To provide an extremely satisfying, frictionless, WYSIWYG inline CV maker that manages multiple CVs client-side, allows modular layout customization, and exposes a local developer-friendly API for programmatic/AI resume automation. Success is a user exporting a perfectly formatted PDF/DOCX within minutes of editing.
+To provide an extremely satisfying, frictionless, WYSIWYG inline CV maker that manages multiple CVs client-side, allows modular layout customization, and exposes a local developer-friendly API for programmatic resume automation. Success is a user exporting a perfectly formatted PDF/DOCX within minutes of editing.
 
 ## Positioning
 A physical-paper-feeling digital resume workspace that merges direct visual editing (WYSIWYG) with developer-grade automation APIs.
