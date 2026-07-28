@@ -84,7 +84,7 @@ function generateSvgBadge(text: string): string {
   const cleanText = text.trim().slice(0, 3).toUpperCase();
   return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
     <rect width="16" height="16" rx="3" fill="#2563eb" />
-    <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="8" font-weight="700">${cleanText}</text>
+    <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="Helvetica" font-size="8" font-weight="700">${cleanText}</text>
   </svg>`;
 }
 
