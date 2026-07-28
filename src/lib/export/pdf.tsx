@@ -2,7 +2,7 @@ import { saveAs } from "file-saver";
 import { type CV } from "@/types/cv";
 
 const getTechIconUrl = (tech: string): string => {
-  return `/api/icons/${encodeURIComponent(tech.trim())}?v=2&ext=.png`;
+  return `/api/icons/${encodeURIComponent(tech.trim())}?v=3&ext=.png`;
 };
 
 const getContactIconUrl = (icon: string | undefined): string | null => {
