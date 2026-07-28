@@ -123,7 +123,13 @@ export async function GET(
       });
 
       if (res.ok) {
-        const svgContent = await res.text();
+        let svgContent = await res.text();
+
+        // Ensure root <svg> tag has width and height for react-pdf compatibility
+        if (!/width\s*=/i.test(svgContent)) {
+          svgContent = svgContent.replace(/<svg/i, '<svg width="24" height="24"');
+        }
+
         return new NextResponse(svgContent, {
           headers: {
             "Content-Type": "image/svg+xml",
