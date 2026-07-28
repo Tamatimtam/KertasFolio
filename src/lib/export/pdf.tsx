@@ -2,7 +2,7 @@ import { saveAs } from "file-saver";
 import { type CV } from "@/types/cv";
 
 const getTechIconUrl = (tech: string): string => {
-  return `/api/icons/${encodeURIComponent(tech.trim())}?ext=.png`;
+  return `/api/icons/${encodeURIComponent(tech.trim())}?v=2&ext=.png`;
 };
 
 const getContactIconUrl = (icon: string | undefined): string | null => {
@@ -20,7 +20,26 @@ const getContactIconUrl = (icon: string | undefined): string | null => {
 
 export async function exportPDF(cv: CV) {
   // Dynamically load the react-pdf renderer on client side to avoid build/SSR issues
-  const { pdf, Document, Page, View, Text, Link, Image, StyleSheet } = await import("@react-pdf/renderer");
+  const { pdf, Document, Page, View, Text, Link, Image, StyleSheet, Font } = await import("@react-pdf/renderer");
+
+  // Register fallbacks for system-ui and sans-serif fonts to prevent react-pdf from throwing errors
+  // if it encounters cached SVG badges or other elements using system font stacks.
+  try {
+    Font.register({
+      family: "system-ui, sans-serif",
+      src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/Roboto-Regular.ttf"
+    });
+    Font.register({
+      family: "system-ui",
+      src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/Roboto-Regular.ttf"
+    });
+    Font.register({
+      family: "sans-serif",
+      src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/Roboto-Regular.ttf"
+    });
+  } catch (e) {
+    console.warn("Fallback font registration failed:", e);
+  }
 
   const getContactHref = (icon: string | undefined, value: string, url?: string) => {
     const cleanVal = (url || value).trim();
