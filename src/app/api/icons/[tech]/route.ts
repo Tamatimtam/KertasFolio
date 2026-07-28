@@ -130,6 +130,17 @@ export async function GET(
           svgContent = svgContent.replace(/<svg/i, '<svg width="24" height="24"');
         }
 
+        // Propagate root fill color to child tags so react-pdf renders them with correct colors
+        const fillMatch = svgContent.match(/<svg[^>]*fill=["']([^"']+)["']/i);
+        const fillColor = fillMatch ? fillMatch[1] : null;
+        if (fillColor && fillColor !== "none") {
+          const tags = ["path", "rect", "circle", "polygon", "ellipse", "line", "polyline", "g"];
+          for (const tag of tags) {
+            const regex = new RegExp(`<${tag}(?![^>]*fill=)`, "gi");
+            svgContent = svgContent.replace(regex, `<${tag} fill="${fillColor}"`);
+          }
+        }
+
         return new NextResponse(svgContent, {
           headers: {
             "Content-Type": "image/svg+xml",
